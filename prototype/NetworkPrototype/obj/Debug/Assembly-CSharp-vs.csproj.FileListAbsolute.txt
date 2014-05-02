@@ -1,0 +1,11 @@
+C:\Users\lenovo\Documents\UW Bothell\385\Practice\NetworkPrototype\Temp\bin\Debug\Assembly-CSharp.dll
+C:\Users\lenovo\Documents\UW Bothell\385\Practice\NetworkPrototype\Temp\bin\Debug\Assembly-CSharp.pdb
+C:\Users\lenovo\Documents\UW Bothell\385\Practice\NetworkPrototype\Temp\bin\Debug\UnityEditor.dll
+C:\Users\lenovo\Documents\UW Bothell\385\Practice\NetworkPrototype\Temp\bin\Debug\UnityEngine.dll
+C:\Users\lenovo\Documents\UW Bothell\385\Practice\NetworkPrototype\Temp\bin\Debug\Mono.Cecil.dll
+C:\Users\lenovo\Documents\UW Bothell\385\Practice\NetworkPrototype\Temp\bin\Debug\nunit.framework.dll
+C:\Users\lenovo\Documents\UW Bothell\385\Practice\NetworkPrototype\Temp\bin\Debug\Unity.DataContract.dll
+C:\Users\lenovo\Documents\UW Bothell\385\Practice\NetworkPrototype\Temp\bin\Debug\ICSharpCode.NRefactory.dll
+C:\Users\lenovo\Documents\UW Bothell\385\Practice\NetworkPrototype\obj\Debug\Assembly-CSharp-vs.csprojResolveAssemblyReference.cache
+C:\Users\lenovo\Documents\UW Bothell\385\Practice\NetworkPrototype\obj\Debug\Assembly-CSharp.dll
+C:\Users\lenovo\Documents\UW Bothell\385\Practice\NetworkPrototype\obj\Debug\Assembly-CSharp.pdb
