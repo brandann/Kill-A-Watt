@@ -3,11 +3,12 @@ using System.Collections;
 
 public class SphereBehavior : MonoBehaviour {
 
+	int unit = 1;
+	
 	// Use this for initialization
 	void Start () {
 		
 	}
-	//
 	
 	// Update is called once per frame
 	void Update () {
