@@ -5,6 +5,9 @@ public class unitBehavior : MonoBehaviour {
 
 	public float speed = .01f;
 	private int damage = 1;
+	
+	public Sprite play1;
+	public Sprite play2;
 
 	// Use this for initialization
 	void Start () {
@@ -34,5 +37,12 @@ public class unitBehavior : MonoBehaviour {
 
 	public void setDamage(int d) {
 		damage = d;
+		SpriteRenderer r = GetComponent<SpriteRenderer>();
+		if(damage < 0){
+			r.sprite = play1;
+		}
+		else {
+			r.sprite = play2;
+		}
 	}
 }
