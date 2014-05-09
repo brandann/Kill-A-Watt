@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
-
+namespace global{
 public class towerBehavior : MonoBehaviour {
 
 	public enum AttackState{
@@ -32,10 +32,21 @@ public class towerBehavior : MonoBehaviour {
 	private float incrementInterval = 3;
 
 	private AttackState attackState = AttackState.ambient;
-	private player currentState = player.player0;
+	public player currentState = player.player0;
 
 	// Use this for initialization
 	void Start () {
+
+		if(this.transform.position.x == 0){
+			//currentState = player.player0;
+		}
+		if(this.transform.position.x < 0){
+			//currentState = player.player1;
+			units = -units;
+		}
+		if(this.transform.position.x > 0){
+			//currentState = player.player2;
+		}
 	
 		#region initialize unit spawning
 		if (null == unitPrefab) 
@@ -115,7 +126,7 @@ public class towerBehavior : MonoBehaviour {
 			if(units < 0) {unit.setDamage(-1);}
 			else if(units > 0) {unit.setDamage(1);}
 			e.transform.rotation = destination;
-			e.transform.position = transform.position + (e.transform.up * 1);
+			e.transform.position = transform.position + (e.transform.up * 4);
 			units -= unit.getDamage(); unitsToSend--;
 		}
 	}
@@ -126,4 +137,5 @@ public class towerBehavior : MonoBehaviour {
 		destination = Quaternion.LookRotation(Vector3.forward, mousePos - transform.position);
 		attackState = AttackState.attack;
 	}	
+}
 }
