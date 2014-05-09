@@ -1,0 +1,621 @@
+fileFormatVersion: 2
+guid: 82799e5c4a39e4fffb48af85ac3dc0a4
+TextureImporter:
+  serializedVersion: 2
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    linearTexture: 0
+    correctGamma: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: .25
+    normalMapFilter: 0
+  isReadable: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 0
+  seamlessCubemap: 0
+  textureFormat: -3
+  maxTextureSize: 4096
+  textureSettings:
+    filterMode: -1
+    aniso: 1
+    mipBias: -1
+    wrapMode: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: .5, y: .5}
+  spritePixelsToUnits: 100
+  alphaIsTransparency: 1
+  textureType: 8
+  buildTargetSettings: []
+  spriteSheet:
+    sprites:
+    - name: win2_0
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 3225
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_1
+      rect:
+        serializedVersion: 2
+        x: 503
+        y: 3225
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_2
+      rect:
+        serializedVersion: 2
+        x: 1005
+        y: 3225
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_3
+      rect:
+        serializedVersion: 2
+        x: 1507
+        y: 3225
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_4
+      rect:
+        serializedVersion: 2
+        x: 2009
+        y: 3225
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_5
+      rect:
+        serializedVersion: 2
+        x: 3013
+        y: 3225
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_6
+      rect:
+        serializedVersion: 2
+        x: 2511
+        y: 3225
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_7
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 2827
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_8
+      rect:
+        serializedVersion: 2
+        x: 503
+        y: 2825
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_9
+      rect:
+        serializedVersion: 2
+        x: 1005
+        y: 2825
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_10
+      rect:
+        serializedVersion: 2
+        x: 1507
+        y: 2825
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_11
+      rect:
+        serializedVersion: 2
+        x: 2009
+        y: 2825
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_12
+      rect:
+        serializedVersion: 2
+        x: 2511
+        y: 2825
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_13
+      rect:
+        serializedVersion: 2
+        x: 3013
+        y: 2825
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_14
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 2429
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_15
+      rect:
+        serializedVersion: 2
+        x: 503
+        y: 2425
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_16
+      rect:
+        serializedVersion: 2
+        x: 1005
+        y: 2425
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_17
+      rect:
+        serializedVersion: 2
+        x: 1507
+        y: 2425
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_18
+      rect:
+        serializedVersion: 2
+        x: 2009
+        y: 2425
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_19
+      rect:
+        serializedVersion: 2
+        x: 2511
+        y: 2425
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_20
+      rect:
+        serializedVersion: 2
+        x: 3013
+        y: 2425
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_21
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 233
+        width: 4
+        height: 42
+      alignment: 9
+      pivot: {x: -208.086411, y: .741419494}
+    - name: win2_22
+      rect:
+        serializedVersion: 2
+        x: 503
+        y: 2025
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_23
+      rect:
+        serializedVersion: 2
+        x: 1005
+        y: 2025
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_24
+      rect:
+        serializedVersion: 2
+        x: 1507
+        y: 2025
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_25
+      rect:
+        serializedVersion: 2
+        x: 2009
+        y: 2025
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_26
+      rect:
+        serializedVersion: 2
+        x: 2511
+        y: 2025
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_27
+      rect:
+        serializedVersion: 2
+        x: 3013
+        y: 2025
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_28
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 1625
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_29
+      rect:
+        serializedVersion: 2
+        x: 503
+        y: 1625
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_30
+      rect:
+        serializedVersion: 2
+        x: 1005
+        y: 1625
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_31
+      rect:
+        serializedVersion: 2
+        x: 1507
+        y: 1625
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_32
+      rect:
+        serializedVersion: 2
+        x: 2009
+        y: 1625
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_33
+      rect:
+        serializedVersion: 2
+        x: 2511
+        y: 1625
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_34
+      rect:
+        serializedVersion: 2
+        x: 3013
+        y: 1625
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_35
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 1225
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_36
+      rect:
+        serializedVersion: 2
+        x: 503
+        y: 1225
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_37
+      rect:
+        serializedVersion: 2
+        x: 1005
+        y: 1225
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_38
+      rect:
+        serializedVersion: 2
+        x: 1507
+        y: 1225
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_39
+      rect:
+        serializedVersion: 2
+        x: 2009
+        y: 1225
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_40
+      rect:
+        serializedVersion: 2
+        x: 2511
+        y: 1225
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_41
+      rect:
+        serializedVersion: 2
+        x: 3013
+        y: 1225
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_42
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 825
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_43
+      rect:
+        serializedVersion: 2
+        x: 503
+        y: 825
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_44
+      rect:
+        serializedVersion: 2
+        x: 1007
+        y: 825
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_45
+      rect:
+        serializedVersion: 2
+        x: 1507
+        y: 825
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_46
+      rect:
+        serializedVersion: 2
+        x: 2009
+        y: 825
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_47
+      rect:
+        serializedVersion: 2
+        x: 2511
+        y: 825
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_48
+      rect:
+        serializedVersion: 2
+        x: 3013
+        y: 825
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_49
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 425
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_50
+      rect:
+        serializedVersion: 2
+        x: 503
+        y: 425
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_51
+      rect:
+        serializedVersion: 2
+        x: 1005
+        y: 425
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_52
+      rect:
+        serializedVersion: 2
+        x: 1507
+        y: 425
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_53
+      rect:
+        serializedVersion: 2
+        x: 2009
+        y: 425
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_54
+      rect:
+        serializedVersion: 2
+        x: 2511
+        y: 425
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_55
+      rect:
+        serializedVersion: 2
+        x: 3013
+        y: 425
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_56
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 25
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_57
+      rect:
+        serializedVersion: 2
+        x: 503
+        y: 25
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_58
+      rect:
+        serializedVersion: 2
+        x: 1005
+        y: 25
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_59
+      rect:
+        serializedVersion: 2
+        x: 1507
+        y: 25
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_60
+      rect:
+        serializedVersion: 2
+        x: 2009
+        y: 25
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_61
+      rect:
+        serializedVersion: 2
+        x: 2511
+        y: 25
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_62
+      rect:
+        serializedVersion: 2
+        x: 3013
+        y: 25
+        width: 500
+        height: 400
+      alignment: 0
+      pivot: {x: .5, y: .5}
+    - name: win2_63
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 2027
+        width: 500
+        height: 402
+      alignment: 0
+      pivot: {x: .5, y: .5}
+  spritePackingTag: 
+  userData: 
