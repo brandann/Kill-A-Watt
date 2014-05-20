@@ -53,9 +53,10 @@ public class ShockTowerShoot : MonoBehaviour {
 	}
 
 	 private void lightning(Transform minion){
-
-			Vector3 parentPos = Vector3 (this.transform.parent.localPosition.x, this.transform.parent.localPosition.y, -1);
-			float parentLocal = 
+			float parentx = this.transform.parent.localPosition.x;
+			float parenty = this.transform.parent.localPosition.y;
+			Vector3 parentPos = new Vector3 (parentx, parenty, -1);
+			//float parentLocal = 
 				line.SetPosition (0, parentPos);
 
 				for (int i =1; i< 4; i++) {

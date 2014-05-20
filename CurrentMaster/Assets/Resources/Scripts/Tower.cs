@@ -3,9 +3,6 @@ using System.Collections;
 namespace Global{
 	public class Tower : MonoBehaviour
     {
-
-        
-
         #region Other GameObjects
         public GameManager Manager;
 		private Camera sceneCam;                                        //Needed to draw GUI labels centered in world cordinates
@@ -16,17 +13,15 @@ namespace Global{
         public ownerShip myOwner;                                       //Player this tower belongs go
         public int units;                                               //Number of garrisoned units should be set at runtime
         public bool selected = false;
-
         #endregion
         
-
         #region Unit Variables
         public GameObject Player1UnitPrefab = null, Player2UnitPrefab = null;
         public float percentOfUnitsPerAttack = 0.5f;                           
         //When and how long units are added to the garrison
         private float lastUnitGeneratedTime = 0;
         private float unitIncrementRate = 3;
-		private float unitSpawnRate = 1f;                    //Time between unit spawns in seconds
+		private float unitSpawnRate = .5f;                    //Time between unit spawns in seconds
         
         
         //Used to add particle like unit spawning
@@ -37,17 +32,18 @@ namespace Global{
 		//private float randSizeMin = .5f;
 		//private float randSizeMax = 1;
         
-        private int unitsToSend;                               //Units left to send from last attack
+        private int unitsToSend;               //Units left to send from last attack
         public Quaternion destination;
         
 		#endregion
 
         #region Sprites 
-        private Sprite neutralSprite = null, player1Sprite = null, player2Sprite = null;
+		private Sprite  neutralSprite = null, 
+						player1Sprite = null, 
+						player2Sprite = null, 
+						player1SelectdSprite = null, 
+						player2SelectdSprite = null;
         #endregion	
-
-
-
 
         void Awake () {
 			Manager = GameObject.Find ("Main Camera").GetComponent<GameManager>();
@@ -57,9 +53,11 @@ namespace Global{
 			Player1UnitPrefab = Resources.Load("Prefabs/Player1Unit") as GameObject;
             Player2UnitPrefab = Resources.Load("Prefabs/Player2Unit") as GameObject;
             myRender = (SpriteRenderer)renderer;
-            neutralSprite = Resources.Load("Textures/NeutralTower",typeof(Sprite)) as Sprite;
-            player1Sprite = Resources.Load("Textures/Tower1",typeof(Sprite)) as Sprite;
-            player2Sprite = Resources.Load("Textures/Player2Tower",typeof(Sprite)) as Sprite;
+            neutralSprite = Resources.Load("Textures/Tower/Player0",typeof(Sprite)) as Sprite;
+            player1Sprite = Resources.Load("Textures/Tower/Player1",typeof(Sprite)) as Sprite;
+			player2Sprite = Resources.Load("Textures/Tower/Player2",typeof(Sprite)) as Sprite;
+			player1SelectdSprite = Resources.Load("Textures/Tower/Player1Selected",typeof(Sprite)) as Sprite;
+			player2SelectdSprite = Resources.Load("Textures/Tower/Player2Selected",typeof(Sprite)) as Sprite;
 		}
 //-----------------------------------------------------------------------------------------------------------------------------------------
 
@@ -74,10 +72,8 @@ namespace Global{
             {   
                 if(myOwner != ownerShip.Neutral)
                     units++;
-
                 lastUnitGeneratedTime = Time.realtimeSinceStartup;
             }            
-
         }
 //--------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -96,7 +92,29 @@ namespace Global{
         void ToggleSelect()
         {
             selected = (selected == true) ? false : true;
+			updateSprite ();
         }
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+		private void updateSprite()
+		{
+			if (myOwner == ownerShip.Neutral) {
+				if(!selected)
+					myRender.sprite = neutralSprite;
+			}
+			else if (myOwner == ownerShip.Player1) {
+				if(selected)
+					myRender.sprite = player1SelectdSprite;
+				else
+					myRender.sprite = player1Sprite;
+			}
+			else if (myOwner == ownerShip.Player2) {
+				if(selected)
+					myRender.sprite = player2SelectdSprite;
+				else
+					myRender.sprite = player2Sprite;
+			}
+		}
 //--------------------------------------------------------------------------------------------------------------------------------------------------
 
         void OnMouseOver()
@@ -190,7 +208,6 @@ namespace Global{
 
             if(other.gameObject.tag.Contains("Unit") && Network.isServer)
                 Network.Destroy(other.gameObject);
- 
         }
 //----------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -215,6 +232,8 @@ namespace Global{
                     break;
             }
         }
+
+
 //-------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -238,7 +257,6 @@ namespace Global{
                 stream.Serialize(ref ownedBy);
                 if (myOwner != (ownerShip)ownedBy)
                     SwitchOwner((ownerShip)ownedBy);
-
             }
         }
 //--------------------------------------------------------------------------------------------------------------------------------------
@@ -261,7 +279,7 @@ namespace Global{
 
                 }
                 //todo remove these magic numbers
-				GUI.Label(new Rect(screenPos.x - 9, sceneCam.pixelHeight - screenPos.y - 40, 25, 50),  units.ToString());			
+				GUI.Label(new Rect(screenPos.x - 9, sceneCam.pixelHeight - screenPos.y - 30, 25, 50),  units.ToString());			
 		}
 	
     }

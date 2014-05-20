@@ -7,7 +7,7 @@ namespace Global
 	{
 		AudioManager audioManager;
 
-		private float speed = 2f;
+		private float speed = 4f;
 		
 		
 		public Sprite play1;
