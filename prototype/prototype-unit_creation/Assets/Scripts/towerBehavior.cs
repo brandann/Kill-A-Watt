@@ -32,6 +32,7 @@ namespace global{
 		public Quaternion destination;
 		private float incrementTime = 0;
 		private float incrementInterval = 3;
+		private Vector3 mousePos;
 
 		private AttackState attackState = AttackState.ambient;
 		public player currentState = player.player0;
@@ -129,6 +130,7 @@ namespace global{
 				e.name = "unit(" + Time.realtimeSinceStartup + ")";
 				if(units < 0) {unit.setDamage(-1);}
 				else if(units > 0) {unit.setDamage(1);}
+				unit.target = mousePos;
 				e.transform.rotation = destination;
 				e.transform.position = transform.position + (e.transform.up * 4);
 				units -= unit.getDamage(); unitsToSend--;
@@ -136,7 +138,7 @@ namespace global{
 		}
 		
 		void OnMouseUp() {
-			Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+			mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 			unitsToSend = Mathf.Abs((int) (units * sendRate));
 			destination = Quaternion.LookRotation(Vector3.forward, mousePos - transform.position);
 			attackState = AttackState.attack;

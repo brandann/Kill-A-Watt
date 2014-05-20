@@ -5,17 +5,21 @@ public class unitBehavior : MonoBehaviour {
 
 	public float speed = .01f;
 	private int damage = 1;
+
+	public Vector3 target;
+	NavMeshAgent agent;
 	
 	public Sprite play1;
 	public Sprite play2;
 
 	// Use this for initialization
 	void Start () {
-	
+		agent = this.GetComponent<NavMeshAgent> ();
 	}
 	
 	// Update is called once per frame
 	void Update () {
+		//agent.SetDestination (target);
 		transform.position += (speed * Time.smoothDeltaTime) * transform.up;
 	}
 	
