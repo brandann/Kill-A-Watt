@@ -13,6 +13,9 @@ namespace Global{
         public ownerShip myOwner;                                       //Player this tower belongs go
         public int units;                                               //Number of garrisoned units should be set at runtime
         public bool selected = false;
+		public GUIStyle GUIplayer1;
+		public GUIStyle GUIplayer2;
+		public GUIStyle GUIneutral;
         #endregion
         
         #region Unit Variables
@@ -67,6 +70,8 @@ namespace Global{
             if (Network.isClient)
                 return;
 
+			//updateSprite();
+
             //Increment garrisoned units on a constant interval
             if ((Time.realtimeSinceStartup - lastUnitGeneratedTime) > unitIncrementRate)
             {   
@@ -80,43 +85,63 @@ namespace Global{
         //Left mouse must go down and up on same collider to call this; used to toggle tower selection
         void OnMouseUpAsButton()
         {
-            Debug.Log("Left Clicked");
+            //Debug.Log("Left Clicked");
             if (Network.isServer && myOwner == ownerShip.Player1)
+            {
                 ToggleSelect();
+                updateSprite();
+            }
             else if (Network.isClient && myOwner == ownerShip.Player2)
+            {
                 networkView.RPC("ToggleSelect", RPCMode.Server);
+                ToggleSelect();
+                updateSprite();
+                
+            }
+            
         }
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
         [RPC]
-        void ToggleSelect()
-        {
+        public void ToggleSelect()        {
+            //Debug.Log("toggle by server? " + Network.isServer);
             selected = (selected == true) ? false : true;
-			updateSprite ();
+            //updateSprite();
         }
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-		private void updateSprite()
-		{
-			if (myOwner == ownerShip.Neutral) {
-				if(!selected)
-					myRender.sprite = neutralSprite;
-			}
-			else if (myOwner == ownerShip.Player1) {
-				if(selected)
-					myRender.sprite = player1SelectdSprite;
-				else
-					myRender.sprite = player1Sprite;
-			}
-			else if (myOwner == ownerShip.Player2) {
-				if(selected)
-					myRender.sprite = player2SelectdSprite;
-				else
-					myRender.sprite = player2Sprite;
-			}
-		}
-//--------------------------------------------------------------------------------------------------------------------------------------------------
+		#region SelectionSprite
 
+
+        public void updateSprite()
+        {
+            switch (myOwner)
+            {
+                case ownerShip.Neutral:
+                    myRender.sprite = neutralSprite;
+                    break;
+                case ownerShip.Player1:
+                    if (selected)
+                        myRender.sprite = player1SelectdSprite;
+                    else
+                        myRender.sprite = player1Sprite;
+                    break;
+                case ownerShip.Player2:
+                    if (selected)
+                        myRender.sprite = player2SelectdSprite;
+                    else
+                        myRender.sprite = player2Sprite;
+                    break;
+                default:
+                    Debug.LogError("Invalid ownership in updateSprite");
+                    break;
+            }
+
+
+        }
+//--------------------------------------------------------------------------------------------------------------------------------------------------
+		#endregion
+		
         void OnMouseOver()
         {
             //Only looking for Right clicks
@@ -168,7 +193,8 @@ namespace Global{
             {
                 //Create a unit and decrement
                 GameObject go = (GameObject)Network.Instantiate(prefabToSpawn, spawnPoint, Quaternion.LookRotation(Vector3.forward, vecToTarget), 0);
-                unitBehavior spawnedUnit = go.GetComponent<unitBehavior>();                        //set the owner of the new unit
+                unitBehavior spawnedUnit = go.GetComponent<unitBehavior>(); //set the owner of the new unit
+				spawnedUnit.destination = targetPos;
                 spawnedUnit.myOwner = myOwner;
                 unitsToSend--;
                 units--;                
@@ -192,22 +218,32 @@ namespace Global{
 		
         void OnTriggerEnter2D(Collider2D other) 
         {
+			Vector3 target = other.gameObject.GetComponent<unitBehavior>().destination;
+			Vector3 here = this.transform.position;
+			Vector3 distance = target - here;
+			print (distance.magnitude);
+			if(distance.magnitude > 2){
+				return;
+			}
             //todo Why isn't this being called on the server?
             ownerShip otherOwner = other.gameObject.GetComponent<unitBehavior>().myOwner;
             if (myOwner == otherOwner)                
                 units++;
             else
             {
-                units--;
+                //units = units - 2;
+                units -= 2;
+				if (units < 0)                   //Can happen when multiple units hit at same time; might watnt to use math.clamp
+                    units = 0;
                 if (units == 0)                  //Switch control when all units are lost
                     SwitchOwner(otherOwner);
-                
-                if (units < 0)                   //Can happen when multiple units hit at same time; might watnt to use math.clamp
-                    units = 0;
             }
 
-            if(other.gameObject.tag.Contains("Unit") && Network.isServer)
-                Network.Destroy(other.gameObject);
+            if(other.gameObject.tag.Contains("Unit") && Network.isServer){
+            	other.gameObject.GetComponent<unitBehavior>().makeBurst();
+				Network.Destroy(other.gameObject);
+            }
+                
         }
 //----------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -231,6 +267,7 @@ namespace Global{
                     Debug.LogError("Switching to invalid owner type");
                     break;
             }
+            updateSprite();
         }
 
 
@@ -240,23 +277,30 @@ namespace Global{
         //Called at network sendrate to sync selected variables
         void OnSerializeNetworkView(BitStream stream, NetworkMessageInfo info)
         {
-            int myCount = 0;
+
             int ownedBy = 0;
             if (stream.isWriting)
             {
-                myCount = units;
-                stream.Serialize(ref myCount);
+                
+                stream.Serialize(ref units);
                 ownedBy = (int)myOwner;              //Cant passe our enum must pass Unity objects or primitives
                 stream.Serialize(ref ownedBy);
+                stream.Serialize(ref selected);
 
             }
             else                                    //Client side read units and ownership if changed
             {
-                stream.Serialize(ref myCount);
-                units = myCount;
+                
+                stream.Serialize(ref units);
+                                
                 stream.Serialize(ref ownedBy);
                 if (myOwner != (ownerShip)ownedBy)
-                    SwitchOwner((ownerShip)ownedBy);
+                SwitchOwner((ownerShip)ownedBy);
+
+                //bool tempSelected = false;
+                //stream.Serialize(ref tempSelected);
+                //if(selected != tempSelected);
+                //ToggleSelect();
             }
         }
 //--------------------------------------------------------------------------------------------------------------------------------------
@@ -268,18 +312,21 @@ namespace Global{
                 switch (myOwner)
                 {
                     case (ownerShip.Neutral):
-                        GUI.contentColor = Color.yellow;
+                        GUI.contentColor = Color.grey;
+						GUI.Label(new Rect(screenPos.x - 9, sceneCam.pixelHeight - screenPos.y - 46, 25, 50),  units.ToString(),GUIneutral);
                         break;
                     case (ownerShip.Player1):
-                        GUI.contentColor = Color.red;
+                       // GUI.contentColor = Color.yellow;
+						GUI.Label(new Rect(screenPos.x - 9, sceneCam.pixelHeight - screenPos.y - 46, 25, 50),  units.ToString(),GUIplayer1);
                         break;
                     case (ownerShip.Player2):
-                        GUI.contentColor = Color.blue;
+                      //  GUI.contentColor = Color.magenta;
+						GUI.Label(new Rect(screenPos.x - 9, sceneCam.pixelHeight - screenPos.y - 46, 25, 50),  units.ToString(),GUIplayer2);
                         break;
 
                 }
                 //todo remove these magic numbers
-				GUI.Label(new Rect(screenPos.x - 9, sceneCam.pixelHeight - screenPos.y - 30, 25, 50),  units.ToString());			
+							
 		}
 	
     }

@@ -9,25 +9,23 @@ public class ShockTowerShoot : MonoBehaviour {
 	float fequency = 1.5f;
 	private LineRenderer line;
 	private bool Collided;
-	ownerShip parentsOwner;
+	public ownerShip parentsOwner;
 	//private LineRenderer test;
 
 
 	void Start () {
 		lastShot = Time.realtimeSinceStartup;
-		line = this.GetComponent<LineRenderer> ();
-		//LineRenderer	test = gameObject.AddComponent<LineRenderer>();
-		
-		
+		line = this.GetComponent<LineRenderer>();
+	
 	}
 	
 
 	void Update () {
 	
 		if((Time.realtimeSinceStartup - lastShot) > 1)
-		lightning(this.transform.parent);
+		lightning(this.transform);
 		
-		parentsOwner = this.transform.parent.gameObject.GetComponent<Tower>().myOwner;
+		
 	}
 
 
@@ -44,7 +42,7 @@ public class ShockTowerShoot : MonoBehaviour {
 						if (Network.isServer) {
 								if (tag != other.gameObject.tag && other.gameObject.tag.Contains ("Unit")) {
 										Network.Destroy (other.gameObject);
-										//DestroyObject(other);
+										
 								}
 						}
 
@@ -53,14 +51,11 @@ public class ShockTowerShoot : MonoBehaviour {
 	}
 
 	 private void lightning(Transform minion){
-			float parentx = this.transform.parent.localPosition.x;
-			float parenty = this.transform.parent.localPosition.y;
-			Vector3 parentPos = new Vector3 (parentx, parenty, -1);
-			//float parentLocal = 
-				line.SetPosition (0, parentPos);
+		
+				line.SetPosition (0, this.transform.localPosition);
 
 				for (int i =1; i< 4; i++) {
-						Vector3 pos = Vector3.Lerp (this.transform.parent.localPosition, minion.localPosition, i / 4.0f);
+						Vector3 pos = Vector3.Lerp (this.transform.localPosition, minion.localPosition, i / 4.0f);
 
 						pos.x += Random.Range (-0.4f, 0.4f);
 						pos.y += Random.Range (-0.4f, 0.4f);

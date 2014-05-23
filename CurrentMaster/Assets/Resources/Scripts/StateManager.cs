@@ -54,8 +54,6 @@ namespace Global{
 		MainCamera = Camera.main;
 		color1 = MainCamera.backgroundColor;
 		color2 = Color.white;
-
-
 	}
 	
 
@@ -117,6 +115,7 @@ namespace Global{
 
 	private void StartMenuState(){
 			MainCamera.transform.position = new Vector3 (100, 0, -10);
+			camera.backgroundColor = Color.grey;
 			//can we just have a play button and internally decide who start the sever?
 		
 		

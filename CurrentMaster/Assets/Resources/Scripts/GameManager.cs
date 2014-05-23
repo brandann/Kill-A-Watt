@@ -12,6 +12,7 @@ namespace Global
         //location and type of towermarkers placed on the scene in the heiarchy
 		private Dictionary<Vector3, ownerShip> mappedTowers = new Dictionary<Vector3, ownerShip>();
 		private Dictionary<Vector3, ownerShip> mappedShocks = new Dictionary<Vector3, ownerShip>();
+        private Dictionary<Vector3, ownerShip> mappedRoots = new Dictionary<Vector3, ownerShip>();
         
         //List of actuall ingame towers and their positions
         public Dictionary<Vector3, Tower> towerLookup = new Dictionary<Vector3, Tower>();
@@ -23,6 +24,8 @@ namespace Global
         
         private GameObject towerPrefab;
 		private GameObject shockPrefab;
+		private GameObject rootPrefab;
+
         #endregion
 
         //Each Player's score
@@ -35,6 +38,7 @@ namespace Global
         {
 			towerPrefab = Resources.Load("Prefabs/tower") as GameObject;
 			shockPrefab = Resources.Load("Prefabs/ShockTower") as GameObject;
+			rootPrefab = Resources.Load ("Prefabs/RootNode") as GameObject;
             //Find all the locations that towers should spawn at from markers
             BuildTowerLocations();
         }
@@ -43,6 +47,8 @@ namespace Global
 
         #region updateScore
         private Queue<GameObject> TowerQ = new Queue<GameObject>();
+        private float regenSpeed = 1f;
+        private float lastUpdate;
 
         public void calculateScore()
         {
@@ -52,6 +58,7 @@ namespace Global
             {
                 if (go != null)
                 {
+                    //print ("this is being called");
                     BFS(go);
                 }
             }
@@ -85,20 +92,29 @@ namespace Global
 
                     if (myOwner == childOwner && node.Key.GetComponentInChildren<Connection>().Visited == false)
                     {
-                       // player1Score += node.Key.GetComponent<Tower>().units;
-						if(root.GetComponent<Tower>().myOwner == ownerShip.Player1)
-							player1Score += 5;
+                        // player1Score += node.Key.GetComponent<Tower>().units;
+                        //if(Time.realtimeSinceStartup > lastUpdate + regenSpeed){ // calculate every second / not update
 
-						else
-							player2Score += 5;
+                        //lastUpdate = Time.realtimeSinceStartup;
+
+                        // each tower has a flat regen speed of 5 per second
+                        if (root.GetComponent<Tower>().myOwner == ownerShip.Player1)
+                        {
+                            player1Score += .005f;
+
+                        }
+                        if (root.GetComponent<Tower>().myOwner == ownerShip.Player2)
+                        {
+                            player2Score += .005f;
+                            //print (player2Score);
+                        }
+                        //}
 
                         TowerQ.Enqueue(node.Key);
                     }
                 }
             }
-            //print ("testscore  " + player1score);
-
-           // player1Score = 0;
+            //	print (player1Score);
         }
         #endregion
 
@@ -110,19 +126,20 @@ namespace Global
 			if (Network.isClient)
 				return;
 
+			calculateScore ();
 
-            player1Score = player2Score = 0; //start counting from 0
+           // player1Score = player2Score = 0; //start counting from 0
 
 
-            foreach (var item in towerLookup)
-            {        
-                
-                if (item.Value.myOwner == ownerShip.Player1)              
-                    player1Score += item.Value.units;
-                else
-                    if (item.Value.myOwner == ownerShip.Player2)
-                        player2Score += item.Value.units;
-            }
+//            foreach (var item in towerLookup)
+//            {        
+//                
+//                if (item.Value.myOwner == ownerShip.Player1)              
+//                    player1Score += item.Value.units;
+//                else
+//                    if (item.Value.myOwner == ownerShip.Player2)
+//                        player2Score += item.Value.units;
+//            }
            
         }
 //--------------------------------------------------------------------------------------------------------------------------------
@@ -137,6 +154,32 @@ namespace Global
             }
         }
 
+        
+		//Called from individual towers to notify all of the same player's towers to deselect a certain location
+        [RPC]
+		public void RPCDeselectTowers(bool isPlayer1)
+		{
+            print("deselecting towers");
+            ownerShip player2Deselect = (isPlayer1 == true) ? ownerShip.Player1 : ownerShip.Player2;
+
+			foreach (KeyValuePair<Vector3, Tower> entry in towerLookup)
+			{
+                if (entry.Value.selected && entry.Value.myOwner == player2Deselect)
+                {
+                    entry.Value.ToggleSelect();
+                    entry.Value.updateSprite();
+                }
+			}
+		}
+
+        public void DeselectTowers(bool isPlayer1)
+        {
+            print("calling deselecttowers");
+            if(Network.isServer)
+                RPCDeselectTowers(isPlayer1);
+                else
+                networkView.RPC("RPCDeselectTowers", RPCMode.Server, Network.isServer);
+        }
 
 
 
@@ -146,8 +189,9 @@ namespace Global
 		void BuildTowerLocations()
 		{
 			GameObject[] towerMarkers = GameObject.FindGameObjectsWithTag("towerMarker");
-			//Debug.Log("found " + towerMarkers.Length + " towerMarkers");
-			foreach (GameObject tm in towerMarkers)
+            
+           
+            foreach (GameObject tm in towerMarkers)
 			{
 				switch (tm.name)
 				{
@@ -169,13 +213,26 @@ namespace Global
 				case "shockMarkerPlayerNeutral":
 					mappedShocks.Add(tm.transform.position, ownerShip.Neutral);
 					break;
+				
+
 				default:
 					Debug.LogError("Invalid towerMarker type in buildTowerLocations");
 					break;
 					
 				}
+
 				Destroy(tm);
 			}
+
+            GameObject[] rootMarkers = GameObject.FindGameObjectsWithTag("RootMarker");
+            foreach (GameObject rm in rootMarkers)
+            {
+                if (rm.name == "RootMarkerPlayer1")
+                    mappedRoots.Add(rm.transform.position, ownerShip.Player1);
+                else
+                    mappedRoots.Add(rm.transform.position, ownerShip.Player2);
+                Destroy(rm);
+            }
 			
 		}
 //---------------------------------------------------------------------------------------------------------------------------
@@ -183,8 +240,26 @@ namespace Global
         //Instanciates the towers in all the locations specified by BuildTowerLocations()
 		public void SpawnTowers()
 		{
-			//Debug.Log("Building " + towerLocations.Count);
-			
+            //GameObject[] rootMarkers = GameObject.FindGameObjectsWithTag("RootMarker");
+
+            //foreach (GameObject root in rootMarkers) {
+            //    GameObject rootNode = (GameObject)Network.Instantiate(rootPrefab,root.transform.position, Quaternion.Euler(0, 0, 0), 0);
+            //    if(root.name == "RootMarkerPlayer1"){
+            //        rootNode.GetComponent<Tower>().myOwner = ownerShip.Player1;
+            //    }
+            //    if(root.name == "RootMarkerPlayer2"){
+            //        rootNode.GetComponent<Tower>().myOwner = ownerShip.Player2;
+            //    }
+            //    Destroy(root);
+            //}
+            foreach (KeyValuePair<Vector3, ownerShip> r in mappedRoots)
+            {
+                GameObject aRoot = (GameObject)Network.Instantiate(rootPrefab, r.Key, Quaternion.Euler(0, 0, 0), 0);
+                Tower rScript = aRoot.GetComponent<Tower>();
+                rScript.SwitchOwner(r.Value);
+            }
+
+
 			foreach (KeyValuePair<Vector3, ownerShip> entry in mappedTowers)
 			{
 				GameObject aTower = (GameObject)Network.Instantiate(towerPrefab, entry.Key, Quaternion.Euler(0, 0, 0), 0);

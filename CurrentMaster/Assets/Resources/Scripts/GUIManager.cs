@@ -1,54 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-//In C# this is the part that confused me most too.
-//	
-//	But, correct way of using find and getcomponent.
-//		
-//		GameObject.Find("ObjectName").GetComponent<ScriptN ame>()
-//		
-//		GameObject Object1 = GameObject.Find("name")
-//		Component Script1 = Object1.GetComponent<ScriptName>()
-//		
-//		Calling a function within the script: Script1.FunctionName()
 
-//GlobalBehavior globalBehavior = GameObject.Find ("Manager").GetComponent<GlobalBehavior>();
-
-
-//var posVector = Camera.main.WorldToScreenPoint(transform.position);
-//var vectorTwo : Vector2 = GUIUtility.ScreenToGUIPoint(new Vector2(posVector.x,posVector.y));
-
-//void OnGUI()
-//{
-//	// 
-//	GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), m_texture, ScaleMode.ScaleToFit, true);
-//}
-
-// Position the billboard in the center, 
-// but respect the picture aspect ratio
-//int textureHeight = GearIcon.height;
-//int textureWidth = GearIcon.width;
-//int screenHeight = Screen.height;
-//int screenWidth = Screen.width;
-//
-//int screenAspectRatio = (screenWidth / screenHeight);
-//int textureAspectRatio = (textureWidth / textureHeight);
-//
-//int scaledHeight;
-//int scaledWidth;
-//if (textureAspectRatio <= screenAspectRatio)
-//{
-//	// The scaled size is based on the height
-//	scaledHeight = screenHeight;
-//	scaledWidth = (screenHeight * textureAspectRatio);
-//}
-//else
-//{
-//	// The scaled size is based on the width
-//	scaledWidth = screenWidth;
-//	scaledHeight = (scaledWidth / textureAspectRatio);
-//}
-//float xPosition = screenWidth / 2 - (scaledWidth / 2);
 namespace Global{
 
 public class GUIManager : MonoBehaviour {
@@ -68,13 +21,18 @@ public class GUIManager : MonoBehaviour {
 		public Texture GearIcon;
 		public Texture Edison;
 		public Texture Tesla;
+		public GUIStyle LeftEnergyBar;
+		public GUIStyle RightEnergyBar;
+		public GUIStyle EnergyBarBorder;
 		public GUISkin MySkin;
 		public GUIStyle GearIconStyle;
 		public GUIStyle MenuButtons;
 		public GUIStyle StartMenu;
+		public GUIStyle selectedStyle;
 		private int selected = -1;
 		private bool textBoxSelected = false;
 		private bool serverWaiting = false;
+		public Vector2 scrollPosition = Vector2.zero;
 		#endregion
 
 
@@ -84,7 +42,7 @@ public class GUIManager : MonoBehaviour {
 
 
 		#region score variables
-		public float totalScore = 1000;
+		public float totalScore = 10000;
 		private float currentLeft;
 		public float scoreLeft;
 		public float scoreRight;
@@ -144,14 +102,21 @@ public class GUIManager : MonoBehaviour {
 
 	void OnGUI() {
 
-		GUI.skin = MySkin;
+		//GUI.skin = MySkin;
 
 
 		ScreenH = Screen.height;
 		ScreenW = Screen.width;
 
 		scoreLeft = gameManager.player1Score;
+			//print ("in gui manager P1: " + scoreLeft);
 		scoreRight = gameManager.player2Score;
+			//print ("in gui manager P2: " + scoreRight);
+
+		if (scoreLeft >= totalScore || scoreRight >= totalScore ) {
+			stateManager.status = WorldGameState.EndGame;
+		}
+		
 
 		GUIstatus =  stateManager.status;
 
@@ -186,7 +151,7 @@ public class GUIManager : MonoBehaviour {
 				break;
 
 			case WorldGameState.EndGame:
-
+				EndGameGUI();
 				break;// not sure if we even need a gui for this state
 
 		}
@@ -272,9 +237,7 @@ public class GUIManager : MonoBehaviour {
 			Rect HeroBoxLeftRect = new Rect ((float)(ScreenW * .01), (float)(ScreenH * .015), (float)(ScreenW * .1), (float)(ScreenH * .15));
 			GUI.Box (HeroBoxLeftRect, Edison);
 
-			Rect EnergyBarLeftRect = new Rect ((float)(ScreenW * .12), (float)(ScreenH * .015), (float)(ScreenW * .35), (float)(ScreenH * .06));
-			GUI.Box (EnergyBarLeftRect, "Engergy Bar");
-
+	
 			scoreLeft/= totalScore;
 			scoreLeft *= (float)(ScreenW * .35);
 
@@ -290,13 +253,13 @@ public class GUIManager : MonoBehaviour {
 			}
 
 			Rect UnderLeftRect = new Rect ((float)(ScreenW * .12), (float)(ScreenH * .015), currentLeft, (float)(ScreenH * .06));
-			GUI.Box (UnderLeftRect, "");
+			GUI.Box (UnderLeftRect, "" , LeftEnergyBar);
 
 			Rect HeroBoxRightRect = new Rect ((float)(ScreenW * .89), (float)(ScreenH * .015), (float)(ScreenW * .1), (float)(ScreenH * .15));
 			GUI.Box (HeroBoxRightRect, Tesla);
-			
-			Rect EnergyBarRightRect = new Rect ((float)(ScreenW * .53), (float)(ScreenH * .015), (float)(ScreenW * .35), (float)(ScreenH * .06));
-			GUI.Box (EnergyBarRightRect, "Engergy Bar");
+
+			Rect EnergyBarLeftRect = new Rect ((float)(ScreenW * .12), (float)(ScreenH * .015), (float)(ScreenW * .35), (float)(ScreenH * .06));
+			GUI.Box (EnergyBarLeftRect, "",EnergyBarBorder);
 
 			scoreRight/= totalScore; //get a percent of the total score
 			scoreRight *= (float)(ScreenW * .35); //multiply that percent by the size of the energy bar
@@ -309,25 +272,28 @@ public class GUIManager : MonoBehaviour {
 			if (currentRight < scoreRight && currentRight < endRight && !(currentRight >= endRight)) {
 
 				currentRight++;
-				//StartRight++;
+	
 			} 
 			else if (currentRight > scoreRight) {
 
-				//StartRight = (float)((ScreenW * .53) + (ScreenW * .35));
 				currentRight--;
-				//StartRight +=  currentRight;
-				//StartRight--;
+
 			}
 			StartRight = (float)((ScreenW * .53) + (ScreenW * .35));
 			StartRight -=  currentRight;
 
 			Rect UnderRightRect = new Rect (StartRight, (float)(ScreenH * .015), currentRight, (float)(ScreenH * .06));
-			GUI.Box (UnderRightRect, "");
+			GUI.Box (UnderRightRect, "",RightEnergyBar);
+
+			Rect EnergyBarRightRect = new Rect ((float)(ScreenW * .53), (float)(ScreenH * .015), (float)(ScreenW * .35), (float)(ScreenH * .06));
+			GUI.Box (EnergyBarRightRect, "", EnergyBarBorder);
 	
 		}
 
 //-----------------------------------------------------------------------------
 		private void StartMenuGUI(){
+
+
 
 
 			Rect PlayButtonRect = new Rect ((float)(ScreenW * .03), (float)(ScreenH * .76),
@@ -355,6 +321,8 @@ public class GUIManager : MonoBehaviour {
 
 //-----------------------------------------------------------------------------
 		private void StartSubMenu(){
+
+
 			Rect SubMenuBox = new Rect ((float)(ScreenW * .03), (float)(ScreenH * .22), (float)(ScreenW * .4), (float)(ScreenH * .54));
 			GUI.Box (SubMenuBox,"",MenuButtons);
 
@@ -366,8 +334,8 @@ public class GUIManager : MonoBehaviour {
 			                                (float)(ScreenW * .15), (float)(ScreenH * .05));
 
 			if (GUI.Button (CreateButtonRect, "Create",MenuButtons) && textBoxSelected == false) {
-				stateManager.status = WorldGameState.InGame;
-				networkManager.StartServer();
+				stateManager.status = WorldGameState.InGame; // to skip client waiting
+				networkManager.StartServer(); // to skip client waiting
 				textBoxSelected = true;
 
 			}
@@ -382,10 +350,10 @@ public class GUIManager : MonoBehaviour {
 
 				Rect OkayBoxRect = new Rect ((float)(ScreenW * .405), (float)(ScreenH * .45), (float)(ScreenW * .07), (float)(ScreenH * .05));
 				if(GUI.Button(OkayBoxRect,"OK",MenuButtons)){
-					//networkManager.StartServer();
-					stateManager.status = WorldGameState.InGame;
-					textBoxSelected = false;
-					//serverWaiting = true;
+					//networkManager.StartServer(); // comment out to skip client waiting
+					//stateManager.status = WorldGameState.InGame;
+					//textBoxSelected = false; // comment out to skip client waiting
+					//serverWaiting = true; // comment out to skip client waiting
 				}
 
 				Rect CancelBoxRect = new Rect ((float)(ScreenW * .49), (float)(ScreenH * .45), (float)(ScreenW * .07), (float)(ScreenH * .05));
@@ -395,12 +363,18 @@ public class GUIManager : MonoBehaviour {
 
 			}
 
-		
-
-
 			Rect JoinButtonRect = new Rect ((float)(ScreenW * .24), (float)(ScreenH * .25),
-			                                  (float)(ScreenW * .15), (float)(ScreenH * .05));
+			                                (float)(ScreenW * .15), (float)(ScreenH * .05));
 
+			if (GUI.Button (JoinButtonRect, "Join",MenuButtons) && textBoxSelected == false) {
+				networkManager.JoinServer(networkManager.hostList[selected]);
+			}
+
+
+			Rect scrollViewRect = new Rect ((float)(ScreenW * .06), (float)(ScreenH * .32), (float)(ScreenW * .33), (float)(ScreenH * .37));
+			Rect subScrollView = new Rect ((float)(ScreenW * .06), (float)(ScreenH * .32), (float)(ScreenW * .30), ScreenH);
+
+			scrollPosition = GUI.BeginScrollView(scrollViewRect, scrollPosition, subScrollView, false,true);
 
 			if(networkManager.hostList != null){
 			//Debug.Log("hostList != null");
@@ -410,22 +384,38 @@ public class GUIManager : MonoBehaviour {
 					                               (float)(ScreenW * .33), (float)(ScreenH * .05));
 
 				if(i == selected){
-					GUI.Button(hostButtonRect, networkManager.hostList[i].gameName,"selected");
+					GUI.Button(hostButtonRect, networkManager.hostList[i].gameName,selectedStyle);
 				}
 				else if (GUI.Button(hostButtonRect, networkManager.hostList[i].gameName)){
 						selected = i;
 				}
-				if (GUI.Button (JoinButtonRect, "Join",MenuButtons) && textBoxSelected == false) {
-						networkManager.JoinServer(networkManager.hostList[selected]);
-				}
+			
 			}
 			}
 		
+			GUI.EndScrollView();
 
 		}
-		
+	
+		//-----------------------------------------------------------------------------
+		private void EndGameGUI(){
+
+
+			// dumb buttons for end game alpha test 
+			if (scoreLeft >= totalScore) {
+				Rect SPauseMenuRect = new Rect ((float)(ScreenW * .38), (float)(ScreenH * .25), (float)(ScreenW * .23), (float)(ScreenH * .23));
+				GUI.Box(SPauseMenuRect, "Player 1 Wins! I <3 Testing",MenuButtons);
+
+			}
+			if (scoreRight >= totalScore) {
+				Rect SPauseMenuRect = new Rect ((float)(ScreenW * .38), (float)(ScreenH * .25), (float)(ScreenW * .23), (float)(ScreenH * .23));
+				GUI.Box(SPauseMenuRect, "Player 2 Wins! I <3 Testing",MenuButtons);
+
+			}
+
+
+	}
 }
-
-
-
+	
+	
 }

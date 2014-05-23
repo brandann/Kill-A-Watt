@@ -14,19 +14,14 @@ public class Connection : MonoBehaviour {
 
 
 	void Start () {
-		//connectionPrefab = Resources.Load("Prefabs/ConnectionLine") as GameObject;
+		parentsOwner = this.transform.parent.gameObject.GetComponent<Tower>().myOwner;
 		findAdjacentTowers ();
 		buildConnections ();
-		//connectionDistance = 200;
 		Visited = false;
 		
 	}
 
-//	void Awake{
-//
-//	}
-	
-	// Update is called once per frame
+
 	void Update () {
 			parentsOwner = this.transform.parent.gameObject.GetComponent<Tower>().myOwner;
 			updateConnectionColors ();
@@ -67,18 +62,12 @@ public class Connection : MonoBehaviour {
 
 		foreach (var tower in connections) {
 
-				tower.Value.SetPosition(0 , (this.transform.parent.position));
-				tower.Value.SetPosition(1, (tower.Key.transform.position));
-//				for (int i =1; i< 4; i++) {
-//					Vector3 pos = Vector3.Lerp (this.transform.parent.localPosition,tower.Key.transform.localPosition, i / 100f);
-//					
-//					pos.x += Random.Range (-0.4f, 0.4f);
-//					pos.y += Random.Range (-0.4f, 0.4f);
-//					
-//					tower.Value.SetPosition (i, pos);
-//				}
-			
-			
+				Vector3 start = new Vector3(this.transform.parent.position.x,this.transform.parent.position.y, 1);
+				Vector3 end =  new Vector3(tower.Key.transform.position.x,tower.Key.transform.position.y, 1);
+
+				tower.Value.SetPosition(0 , start);
+				tower.Value.SetPosition(1, end);
+
 		}
 		
 	}
@@ -89,13 +78,13 @@ public class Connection : MonoBehaviour {
 
 			if(parentsOwner == tower.Key.GetComponent<Tower>().myOwner && parentsOwner == ownerShip.Player1){
 					//print ("red");
-					tower.Value.SetColors(Color.red,Color.red);
+					tower.Value.SetColors(Color.yellow,Color.yellow);
 			}
 					//make red
 
 			if(parentsOwner == tower.Key.GetComponent<Tower>().myOwner && parentsOwner == ownerShip.Player2){
 					//print ("blue");
-					tower.Value.SetColors(Color.blue,Color.blue);
+					tower.Value.SetColors(Color.magenta,Color.magenta);
 			}
 						//make blue
 
