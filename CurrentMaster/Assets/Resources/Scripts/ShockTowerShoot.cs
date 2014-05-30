@@ -6,65 +6,140 @@ public class ShockTowerShoot : MonoBehaviour {
 
 	// Use this for initialization
 	float lastShot;
-	float fequency = 1.5f;
+	private float fequency = 1.00f; // seconds a minion is killed
 	private LineRenderer line;
 	private bool Collided;
 	public ownerShip parentsOwner;
+	private float towerRange;
+	private GameObject current;
 	//private LineRenderer test;
 
 
 	void Start () {
 		lastShot = Time.realtimeSinceStartup;
 		line = this.GetComponent<LineRenderer>();
+		towerRange = 10;
 	
 	}
 	
 
 	void Update () {
-	
-		if((Time.realtimeSinceStartup - lastShot) > 1)
-		lightning(this.transform);
+			//Transform temp = new Transform(new Vector3(this.transform.position.x,this.transform.position.y + 3, 0));
+
+		if ((Time.realtimeSinceStartup - lastShot) > 1)
+			lightningSelf ();
+
+			getMinions ();
 		
 		
 	}
 
 
-   void OnTriggerStay2D(Collider2D other){
-		//print ("this is being called");
 
-		 if (parentsOwner != other.gameObject.GetComponent<unitBehavior> ().myOwner) {
 
-				lightning (other.transform);
+	 private void getMinions(){
+		
 
-				if (Time.realtimeSinceStartup - lastShot > fequency) {
+		if (parentsOwner == ownerShip.Player1) {
+				GameObject[] P2Array = GameObject.FindGameObjectsWithTag ("Player2Unit");
+				destroyMinions(P2Array);
+		}
+
+		if (parentsOwner == ownerShip.Player2) {
+				GameObject[] P1Array = GameObject.FindGameObjectsWithTag ("Player1Unit");
+				destroyMinions(P1Array);
+
+		}
+
+	
+	}
+	
+
+	private void destroyMinions(GameObject[] minionArray){
+
+			Vector3 from = this.transform.position;
+			
+			foreach (GameObject minion in minionArray) {
+				
+				if(current == null){
+					current = minion;
+				}
+
+				Vector3 to = minion.transform.position;
+				float dist = Vector3.Magnitude(from - to);
+		
+
+				if(Mathf.Abs(dist) < towerRange){
+
+					lightning (current.transform);
+					
+					if (Time.realtimeSinceStartup - lastShot > fequency){
 						lastShot = Time.realtimeSinceStartup;
 
-						if (Network.isServer) {
-								if (tag != other.gameObject.tag && other.gameObject.tag.Contains ("Unit")) {
-										Network.Destroy (other.gameObject);
-										
-								}
+						if (Network.isServer){
+							current.GetComponent<unitBehavior>().makeBurst();
+							Network.Destroy (current);
 						}
+					}
 
+				}else{
+					current = null;
 				}
-		}
-	}
-
-	 private void lightning(Transform minion){
+	
+			}
 		
-				line.SetPosition (0, this.transform.localPosition);
+		}
+
+		
+		private void lightning(Transform minion){
+		
+			if (parentsOwner == ownerShip.Player1) 
+				line.SetColors (Color.yellow, Color.white);
+			else if(parentsOwner == ownerShip.Player2)
+				line.SetColors (Color.blue, Color.white);
+
+			
+
+					line.SetPosition (0, this.transform.localPosition);
+				
+
 
 				for (int i =1; i< 4; i++) {
 						Vector3 pos = Vector3.Lerp (this.transform.localPosition, minion.localPosition, i / 4.0f);
 
-						pos.x += Random.Range (-0.4f, 0.4f);
-						pos.y += Random.Range (-0.4f, 0.4f);
+						pos.x += Random.Range (-0.8f, 0.8f);
+						pos.y += Random.Range (-0.8f, 0.8f);
 
 						line.SetPosition (i, pos);
 				}
 
-				line.SetPosition (4, minion.localPosition);
+					line.SetPosition (4, minion.localPosition);
+				
 		    
+		}
+
+		private void lightningSelf(){
+			if (parentsOwner == ownerShip.Player1) 
+				line.SetColors (Color.yellow, Color.white);
+			else if(parentsOwner == ownerShip.Player2)
+				line.SetColors (Color.blue, Color.white);
+
+			Vector3 updatedVector = new Vector3(this.transform.position.x,this.transform.position.y + 1.5f, 0);
+
+			line.SetPosition (0, updatedVector);
+			 
+			for (int i =1; i< 4; i++) {
+				Vector3 pos = Vector3.Lerp (updatedVector, updatedVector, i / 4.0f);
+				
+				pos.x += Random.Range (-0.8f, 0.8f);
+				pos.y += Random.Range (-0.8f, 0.8f);
+				
+				line.SetPosition (i, pos);
+			}
+		
+				line.SetPosition (4, updatedVector);
+			
+			
 		}
 
 }

@@ -9,7 +9,7 @@ namespace Global
 		private GameObject burstManagerPrefab;
 		public Vector3 destination = new Vector3(0,0,0);
 		
-		private float speed = 4f;
+		public float speed;
 		
 		LineRenderer line;
 		public Sprite play1;

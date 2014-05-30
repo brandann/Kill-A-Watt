@@ -18,27 +18,42 @@ namespace Global
         public Dictionary<Vector3, Tower> towerLookup = new Dictionary<Vector3, Tower>();
         
         //Default unit count for each of the 3 factions        
-        public int NeutralStartingUnits = 15;
-        public int Player1StartingUnits = 10;
-        public int Player2StartingUnits = 10;
+        public int NeutralStartingUnits;
+        public int Player1StartingUnits;
+        public int Player2StartingUnits;
         
         private GameObject towerPrefab;
 		private GameObject shockPrefab;
-		private GameObject rootPrefab;
+		private GameObject root1Prefab;
+		private GameObject root2Prefab;
+		private GameObject plusTenPrefab;
 
+		
         #endregion
 
         //Each Player's score
         public float player1Score = 0;
         public float player2Score = 0;
-        //Used to sync scores as network sync runs at diff speed than update
-    
+		private float fequency = 5;
+		private float lastCalc;
+		private bool player1HasAllTowers;
+		private bool player2HasAllTowers;
+		StateManager stateManager;
+
+        //Set from inspector to have selections cleared after attacks
+        public bool ClearSelectionAfterAttack = true;
+
+        
 
         void Start()
-        {
+        {			
 			towerPrefab = Resources.Load("Prefabs/tower") as GameObject;
 			shockPrefab = Resources.Load("Prefabs/ShockTower") as GameObject;
-			rootPrefab = Resources.Load ("Prefabs/RootNode") as GameObject;
+			root1Prefab = Resources.Load ("Prefabs/DeathRayPlayer1") as GameObject;
+			root2Prefab = Resources.Load ("Prefabs/DeathRayPlayer2") as GameObject;
+			GameObject manager = GameObject.FindGameObjectsWithTag("MainCamera")[0];
+			stateManager = manager.GetComponent<StateManager>();
+
             //Find all the locations that towers should spawn at from markers
             BuildTowerLocations();
         }
@@ -52,22 +67,45 @@ namespace Global
 
         public void calculateScore()
         {
+            //int test = 0;
             GameObject[] rootArray = GameObject.FindGameObjectsWithTag("RootNode");
 
-            foreach (GameObject go in rootArray)
+            if (Time.realtimeSinceStartup - lastCalc > fequency)
             {
-                if (go != null)
+                lastCalc = Time.realtimeSinceStartup;
+
+                //					foreach (GameObject go in rootArray) {
+                //							if (go != null) {
+                //									//test++;
+                //									BFS (go);
+                //							}
+                //					}
+                if (rootArray != null)
                 {
-                    //print ("this is being called");
-                    BFS(go);
+                    BFS(rootArray[0]);
+                    BFS(rootArray[1]);
                 }
-            }
 
-            GameObject[] towerArray = GameObject.FindGameObjectsWithTag("Tower");
+                GameObject[] towerArray = GameObject.FindGameObjectsWithTag("Tower");
 
-            foreach (GameObject go in towerArray)
-            {
-                go.GetComponentInChildren<Connection>().Visited = false;
+                foreach (GameObject go in towerArray)
+                {
+                    go.GetComponent<Tower>().Visited = false;
+                }
+
+                if (player1HasAllTowers == false)
+                    player1HasAllTowers = true;
+                //else
+                //stateManager.status = WorldGameState.EndGame;
+
+                if (player2HasAllTowers == false)
+                    player2HasAllTowers = true;
+                //else
+                //stateManager.status = WorldGameState.EndGame;
+
+                //player1Score = 0;
+                //player2Score = 0;
+
             }
 
         }
@@ -75,14 +113,54 @@ namespace Global
         public void BFS(GameObject root)
         {
 
-            TowerQ.Enqueue(root.gameObject);
+            Dictionary<GameObject, LineRenderer> rootAdjacent = root.GetComponentInChildren<Connection>().connections;
+            //todo reduce the .getComponent<> calls they are expensive
+            foreach (var node in rootAdjacent)
+            {
+
+                if (root.GetComponent<DeathRay>().myOwner == node.Key.GetComponent<Tower>().myOwner)
+                {
+                    TowerQ.Enqueue(node.Key);
+
+                    node.Key.GetComponent<Tower>().Visited = true;
+                    if (root.GetComponent<DeathRay>().myOwner == ownerShip.Player1)
+                    {
+                        player1Score += 10;
+                        node.Key.GetComponent<Tower>().PlayPlusTen();
+
+                    }
+                    if (root.GetComponent<DeathRay>().myOwner == ownerShip.Player2)
+                    {
+                        node.Key.GetComponent<Tower>().networkView.RPC("PlayPlusTen", RPCMode.Others);
+                        player2Score += 10;
+                    }
+                }
+            }
 
             while (TowerQ.Count != 0)
             {
                 GameObject currentNode = TowerQ.Dequeue(); //remove the first element
 
                 ownerShip myOwner = currentNode.GetComponent<Tower>().myOwner; // get the owner of current
-                currentNode.GetComponentInChildren<Connection>().Visited = true; // mark the node as visited
+
+
+                if (!currentNode.GetComponent<Tower>().Visited)
+                {
+                    if (root.GetComponent<DeathRay>().myOwner == ownerShip.Player1)
+                    {
+                        player1Score += 10;
+                        currentNode.GetComponent<Tower>().PlayPlusTen();
+
+                    }
+                    if (root.GetComponent<DeathRay>().myOwner == ownerShip.Player2)
+                    {
+                        currentNode.GetComponent<Tower>().networkView.RPC("PlayPlusTen", RPCMode.Others);
+                        player2Score += 10;
+                    }
+
+                    currentNode.GetComponent<Tower>().Visited = true;
+                }
+
 
                 Dictionary<GameObject, LineRenderer> adjacent = currentNode.GetComponentInChildren<Connection>().connections;
 
@@ -90,31 +168,25 @@ namespace Global
                 {
                     ownerShip childOwner = node.Key.GetComponent<Tower>().myOwner; // get the owner of the child node
 
-                    if (myOwner == childOwner && node.Key.GetComponentInChildren<Connection>().Visited == false)
+                    if (myOwner != childOwner && myOwner == ownerShip.Player1)
+                        player1HasAllTowers = false;
+
+                    if (myOwner != childOwner && myOwner == ownerShip.Player2)
+                        player1HasAllTowers = false;
+
+
+
+                    if (myOwner == childOwner && node.Key.GetComponent<Tower>().Visited == false)
                     {
-                        // player1Score += node.Key.GetComponent<Tower>().units;
-                        //if(Time.realtimeSinceStartup > lastUpdate + regenSpeed){ // calculate every second / not update
-
-                        //lastUpdate = Time.realtimeSinceStartup;
-
-                        // each tower has a flat regen speed of 5 per second
-                        if (root.GetComponent<Tower>().myOwner == ownerShip.Player1)
-                        {
-                            player1Score += .005f;
-
-                        }
-                        if (root.GetComponent<Tower>().myOwner == ownerShip.Player2)
-                        {
-                            player2Score += .005f;
-                            //print (player2Score);
-                        }
-                        //}
 
                         TowerQ.Enqueue(node.Key);
+
                     }
                 }
             }
-            //	print (player1Score);
+
+            //print ("player1 has" +player1Score+ "towers connected");
+            //print ("player2 has" +player2Score+ "towers connected");
         }
         #endregion
 
@@ -125,24 +197,17 @@ namespace Global
         {
 			if (Network.isClient)
 				return;
+            if(stateManager.status == WorldGameState.InGame)
+                calculateScore ();
 
-			calculateScore ();
-
-           // player1Score = player2Score = 0; //start counting from 0
-
-
-//            foreach (var item in towerLookup)
-//            {        
-//                
-//                if (item.Value.myOwner == ownerShip.Player1)              
-//                    player1Score += item.Value.units;
-//                else
-//                    if (item.Value.myOwner == ownerShip.Player2)
-//                        player2Score += item.Value.units;
-//            }
+ 
            
         }
 //--------------------------------------------------------------------------------------------------------------------------------
+
+	
+
+
 
         //Called from individual towers to notify all of the same player's towers to attack a certain location
         public void AttackToward(Vector3 targetPosition, ownerShip attackingPlayer)
@@ -152,6 +217,10 @@ namespace Global
                 if (entry.Value.selected && entry.Value.myOwner == attackingPlayer)
                     StartCoroutine(entry.Value.SpawnAttack(targetPosition));
             }
+
+            if(ClearSelectionAfterAttack)
+                RPCDeselectTowers(attackingPlayer == ownerShip.Player1);
+            
         }
 
         
@@ -160,25 +229,26 @@ namespace Global
 		public void RPCDeselectTowers(bool isPlayer1)
 		{
             print("deselecting towers");
-            ownerShip player2Deselect = (isPlayer1 == true) ? ownerShip.Player1 : ownerShip.Player2;
+            ownerShip playerToDeselect = (isPlayer1 == true) ? ownerShip.Player1 : ownerShip.Player2;
 
 			foreach (KeyValuePair<Vector3, Tower> entry in towerLookup)
 			{
-                if (entry.Value.selected && entry.Value.myOwner == player2Deselect)
+                if (entry.Value.selected && entry.Value.myOwner == playerToDeselect)
                 {
                     entry.Value.ToggleSelect();
                     entry.Value.updateSprite();
+                    
                 }
 			}
 		}
 
         public void DeselectTowers(bool isPlayer1)
         {
-            print("calling deselecttowers");
+            //print("calling deselecttowers");
             if(Network.isServer)
-                RPCDeselectTowers(isPlayer1);
+                RPCDeselectTowers(true);
                 else
-                networkView.RPC("RPCDeselectTowers", RPCMode.Server, Network.isServer);
+                networkView.RPC("RPCDeselectTowers", RPCMode.Server, false);
         }
 
 
@@ -240,23 +310,16 @@ namespace Global
         //Instanciates the towers in all the locations specified by BuildTowerLocations()
 		public void SpawnTowers()
 		{
-            //GameObject[] rootMarkers = GameObject.FindGameObjectsWithTag("RootMarker");
-
-            //foreach (GameObject root in rootMarkers) {
-            //    GameObject rootNode = (GameObject)Network.Instantiate(rootPrefab,root.transform.position, Quaternion.Euler(0, 0, 0), 0);
-            //    if(root.name == "RootMarkerPlayer1"){
-            //        rootNode.GetComponent<Tower>().myOwner = ownerShip.Player1;
-            //    }
-            //    if(root.name == "RootMarkerPlayer2"){
-            //        rootNode.GetComponent<Tower>().myOwner = ownerShip.Player2;
-            //    }
-            //    Destroy(root);
-            //}
+   
             foreach (KeyValuePair<Vector3, ownerShip> r in mappedRoots)
             {
-                GameObject aRoot = (GameObject)Network.Instantiate(rootPrefab, r.Key, Quaternion.Euler(0, 0, 0), 0);
-                Tower rScript = aRoot.GetComponent<Tower>();
-                rScript.SwitchOwner(r.Value);
+				if(r.Value == ownerShip.Player1){
+	                GameObject aRoot = (GameObject)Network.Instantiate(root1Prefab, r.Key, Quaternion.Euler(0, 0, 0), 0);
+	                
+				}
+				else{
+					GameObject aRoot = (GameObject)Network.Instantiate(root2Prefab, r.Key, Quaternion.Euler(0, 0, 0), 0);
+				}
             }
 
 
@@ -308,6 +371,10 @@ namespace Global
 			}
 			
 		}
+
+
+
+
 //--------------------------------------------------------------------------------------------------------------
         void OnSerializeNetworkView(BitStream stream, NetworkMessageInfo info)
         {

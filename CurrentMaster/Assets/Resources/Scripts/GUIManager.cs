@@ -21,17 +21,24 @@ public class GUIManager : MonoBehaviour {
 		public Texture GearIcon;
 		public Texture Edison;
 		public Texture Tesla;
+		public GUIStyle LightningBolt;
 		public GUIStyle LeftEnergyBar;
 		public GUIStyle RightEnergyBar;
 		public GUIStyle EnergyBarBorder;
-		public GUISkin MySkin;
 		public GUIStyle GearIconStyle;
 		public GUIStyle MenuButtons;
 		public GUIStyle StartMenu;
+		public GUIStyle PlayButton;
+		public GUIStyle JoinButton;
+		public GUIStyle CreateButton;
+		public GUIStyle MenuBox;
+		public GUIStyle Sub_MenuBox;
+		public GUIStyle DropDown;
 		public GUIStyle selectedStyle;
 		private int selected = -1;
 		private bool textBoxSelected = false;
 		private bool serverWaiting = false;
+		private bool serverSelected = false;
 		public Vector2 scrollPosition = Vector2.zero;
 		#endregion
 
@@ -42,7 +49,7 @@ public class GUIManager : MonoBehaviour {
 
 
 		#region score variables
-		public float totalScore = 10000;
+		public float totalScore;
 		private float currentLeft;
 		public float scoreLeft;
 		public float scoreRight;
@@ -109,9 +116,9 @@ public class GUIManager : MonoBehaviour {
 		ScreenW = Screen.width;
 
 		scoreLeft = gameManager.player1Score;
-			//print ("in gui manager P1: " + scoreLeft);
+			print ("in gui manager P1: " + scoreLeft);
 		scoreRight = gameManager.player2Score;
-			//print ("in gui manager P2: " + scoreRight);
+			print ("in gui manager P2: " + scoreRight);
 
 		if (scoreLeft >= totalScore || scoreRight >= totalScore ) {
 			stateManager.status = WorldGameState.EndGame;
@@ -123,7 +130,9 @@ public class GUIManager : MonoBehaviour {
 		
 		switch (GUIstatus) 
 		{
-			
+			case WorldGameState.Tutorial:
+				TutorialButtons();
+				break;
 			case WorldGameState.Pause:
 //				GUI.Box(new Rect(testposX * Screen.width,testposY * Screen.height,
 //				                 testsizeX * Screen.width,testsizeY * Screen.height), "test");
@@ -174,7 +183,7 @@ public class GUIManager : MonoBehaviour {
 			if (lastState == WorldGameState.InGame) {
 
 				Rect PauseMenuRect = new Rect ((float)(ScreenW * .38), (float)(ScreenH * .25), (float)(ScreenW * .23), (float)(ScreenH * .27));
-				GUI.Box (PauseMenuRect, "Menu",MenuButtons);
+				GUI.Box (PauseMenuRect, "",MenuButtons);
 
 
 				Rect QuitButtonRect = new Rect ((float)(ScreenW * .405), (float)(ScreenH * .38), (float)(ScreenW * .18), (float)(ScreenH * .05));
@@ -201,7 +210,7 @@ public class GUIManager : MonoBehaviour {
 			}else if (lastState == WorldGameState.StartMenu) {
 
 				Rect SPauseMenuRect = new Rect ((float)(ScreenW * .38), (float)(ScreenH * .25), (float)(ScreenW * .23), (float)(ScreenH * .23));
-				GUI.Box(SPauseMenuRect, "Menu",MenuButtons);
+				GUI.Box(SPauseMenuRect, "",MenuButtons);
 	
 				
 				Rect SExitButtonRect = new Rect ((float)(ScreenW * .405), (float)(ScreenH * .38), (float)(ScreenW * .18), (float)(ScreenH * .05));
@@ -225,6 +234,10 @@ public class GUIManager : MonoBehaviour {
 //-----------------------------------------------------------------------------
 		private void InGameGUI(){
 			//this code is to make the button a independent of resolution
+
+			Rect boltRect = new Rect ((float)(ScreenW*.47), (float)(ScreenH* .005), (float)(ScreenW * .06), (float)(ScreenH * .1));
+			GUI.Box (boltRect,"", LightningBolt);
+
 			Rect MenuButtonRect = new Rect ((float)(ScreenW * .01), (float)(ScreenH - (ScreenH * .01 + (float)(ScreenW * .030))),
 				                                (float)(ScreenW * .030), (float)(ScreenW * .030));
 			if(GUI.Button(MenuButtonRect,"",GearIconStyle)){
@@ -292,14 +305,16 @@ public class GUIManager : MonoBehaviour {
 
 //-----------------------------------------------------------------------------
 		private void StartMenuGUI(){
-
-
-
+			Rect TutorialStart = new Rect ((float)(ScreenW * .5), (float)(ScreenH * .76),
+			                                (float)(ScreenW * .2), (float)(ScreenH * .1));
+			if(GUI.Button (TutorialStart,"Tutorial")){
+				stateManager.status = WorldGameState.Tutorial;
+			}
 
 			Rect PlayButtonRect = new Rect ((float)(ScreenW * .03), (float)(ScreenH * .76),
 			                                (float)(ScreenW * .2), (float)(ScreenH * .1));
 
-			SubMenu =  GUI.Toggle(PlayButtonRect, SubMenu, "Play",MenuButtons);
+			SubMenu =  GUI.Toggle(PlayButtonRect, SubMenu, "",PlayButton);
 			if (SubMenu && !serverWaiting) {
 				StartSubMenu();
 			}
@@ -315,7 +330,7 @@ public class GUIManager : MonoBehaviour {
 
 			if (serverWaiting) {
 				Rect EditBoxRect = new Rect ((float)(ScreenW * .395), (float)(ScreenH * .31), (float)(ScreenW * .2), (float)(ScreenH * .25));
-				GUI.Box(EditBoxRect,"waiting for someone to join");
+				GUI.Box(EditBoxRect,"waiting for someone to join",MenuButtons);
 			}
 		}
 
@@ -324,18 +339,16 @@ public class GUIManager : MonoBehaviour {
 
 
 			Rect SubMenuBox = new Rect ((float)(ScreenW * .03), (float)(ScreenH * .22), (float)(ScreenW * .4), (float)(ScreenH * .54));
-			GUI.Box (SubMenuBox,"",MenuButtons);
+			GUI.Box (SubMenuBox,"",MenuBox);
 
 			Rect SubSubMenuBox = new Rect ((float)(ScreenW * .06), (float)(ScreenH * .32), (float)(ScreenW * .33), (float)(ScreenH * .37));
-			GUI.Box (SubSubMenuBox,"");
+			GUI.Box (SubSubMenuBox,"",Sub_MenuBox);
 
 
 			Rect CreateButtonRect = new Rect ((float)(ScreenW * .06), (float)(ScreenH * .25),
 			                                (float)(ScreenW * .15), (float)(ScreenH * .05));
 
-			if (GUI.Button (CreateButtonRect, "Create",MenuButtons) && textBoxSelected == false) {
-				stateManager.status = WorldGameState.InGame; // to skip client waiting
-				networkManager.StartServer(); // to skip client waiting
+			if (GUI.Button (CreateButtonRect, "",CreateButton) && textBoxSelected == false) {				
 				textBoxSelected = true;
 
 			}
@@ -345,15 +358,14 @@ public class GUIManager : MonoBehaviour {
 				GUI.Box(EditBoxRect,"",MenuButtons);
 
 				Rect TextFieldRect = new Rect ((float)(ScreenW * .405), (float)(ScreenH * .38), (float)(ScreenW * .18), (float)(ScreenH * .05));
-				//print(networkManager.gameName);
+			
 				networkManager.gameName = GUI.TextField(TextFieldRect,networkManager.gameName,25);
 
 				Rect OkayBoxRect = new Rect ((float)(ScreenW * .405), (float)(ScreenH * .45), (float)(ScreenW * .07), (float)(ScreenH * .05));
 				if(GUI.Button(OkayBoxRect,"OK",MenuButtons)){
-					//networkManager.StartServer(); // comment out to skip client waiting
-					//stateManager.status = WorldGameState.InGame;
-					//textBoxSelected = false; // comment out to skip client waiting
-					//serverWaiting = true; // comment out to skip client waiting
+					networkManager.StartServer(); // comment out to skip client waiting
+					textBoxSelected = false; // comment out to skip client waiting
+					serverWaiting = true; // comment out to skip client waiting
 				}
 
 				Rect CancelBoxRect = new Rect ((float)(ScreenW * .49), (float)(ScreenH * .45), (float)(ScreenW * .07), (float)(ScreenH * .05));
@@ -366,7 +378,7 @@ public class GUIManager : MonoBehaviour {
 			Rect JoinButtonRect = new Rect ((float)(ScreenW * .24), (float)(ScreenH * .25),
 			                                (float)(ScreenW * .15), (float)(ScreenH * .05));
 
-			if (GUI.Button (JoinButtonRect, "Join",MenuButtons) && textBoxSelected == false) {
+			if (GUI.Button (JoinButtonRect, "",JoinButton) && textBoxSelected == false && serverSelected == true) {
 				networkManager.JoinServer(networkManager.hostList[selected]);
 			}
 
@@ -380,14 +392,15 @@ public class GUIManager : MonoBehaviour {
 			//Debug.Log("hostList != null");
 			for (int i = 0; i < networkManager.hostList.Length; i++)
 			{
-				Rect hostButtonRect = new Rect((float)(ScreenW * .06),(float)((ScreenH * .32) + (ScreenH * .05 * i)), 
-					                               (float)(ScreenW * .33), (float)(ScreenH * .05));
+				Rect hostButtonRect = new Rect((float)(ScreenW * .08),(float)((ScreenH * .32) + (ScreenH * .05 * i)), 
+					                               (float)(ScreenW * .31), (float)(ScreenH * .05));
 
 				if(i == selected){
 					GUI.Button(hostButtonRect, networkManager.hostList[i].gameName,selectedStyle);
 				}
-				else if (GUI.Button(hostButtonRect, networkManager.hostList[i].gameName)){
+				else if (GUI.Button(hostButtonRect, networkManager.hostList[i].gameName,DropDown)){
 						selected = i;
+						serverSelected = true;
 				}
 			
 			}
@@ -415,6 +428,32 @@ public class GUIManager : MonoBehaviour {
 
 
 	}
+		//-----------------------------------------------------------------------------
+		private void TutorialButtons(){
+			
+			
+			// dumb buttons for end game alpha test 
+
+				Rect Previous = new Rect ((float)(ScreenW*.47), (float)(ScreenH* .005), (float)(ScreenW * .06), (float)(ScreenH * .1));
+				if (GUI.Button (Previous, "Previous")) {
+				stateManager.CameraPosTutorial(-100);
+				}
+		
+				Rect Next = new Rect ((float)(ScreenW*.47 + (ScreenW * .06)), (float)(ScreenH* .005), (float)(ScreenW * .06), (float)(ScreenH * .1));
+				if(GUI.Button (Next,"Next")){
+				stateManager.CameraPosTutorial(100);
+				}
+
+				Rect Finished = new Rect ((float)(ScreenW*.47 + (ScreenW * .12)), (float)(ScreenH* .005), (float)(ScreenW * .06), (float)(ScreenH * .1));
+				if (GUI.Button (Finished, "Done")) {
+						stateManager.status = WorldGameState.StartMenu;
+						stateManager.tutorialStarted = true;
+				}
+				
+
+			
+			
+		}
 }
 	
 	

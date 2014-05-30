@@ -7,24 +7,29 @@ namespace Global{
         public GameManager Manager;
 		private Camera sceneCam;                                        //Needed to draw GUI labels centered in world cordinates
         private SpriteRenderer myRender;
+        private Transform myPlusTen; 
         #endregion
 
         #region Tower Properties
+		public bool Visited;
         public ownerShip myOwner;                                       //Player this tower belongs go
         public int units;                                               //Number of garrisoned units should be set at runtime
         public bool selected = false;
 		public GUIStyle GUIplayer1;
 		public GUIStyle GUIplayer2;
 		public GUIStyle GUIneutral;
+        
         #endregion
         
         #region Unit Variables
+		private const float MAXUNITS = 50;
         public GameObject Player1UnitPrefab = null, Player2UnitPrefab = null;
         public float percentOfUnitsPerAttack = 0.5f;                           
         //When and how long units are added to the garrison
         private float lastUnitGeneratedTime = 0;
-        private float unitIncrementRate = 3;
+        public float unitIncrementRate = 2;
 		private float unitSpawnRate = .5f;                    //Time between unit spawns in seconds
+		public int attackedDamage;
         
         
         //Used to add particle like unit spawning
@@ -49,19 +54,41 @@ namespace Global{
         #endregion	
 
         void Awake () {
+			Visited = false;
+
 			Manager = GameObject.Find ("Main Camera").GetComponent<GameManager>();
 			GameObject go = GameObject.FindGameObjectWithTag("MainCamera");
 			sceneCam = go.camera;
 		
+
 			Player1UnitPrefab = Resources.Load("Prefabs/Player1Unit") as GameObject;
             Player2UnitPrefab = Resources.Load("Prefabs/Player2Unit") as GameObject;
             myRender = (SpriteRenderer)renderer;
-            neutralSprite = Resources.Load("Textures/Tower/Player0",typeof(Sprite)) as Sprite;
-            player1Sprite = Resources.Load("Textures/Tower/Player1",typeof(Sprite)) as Sprite;
-			player2Sprite = Resources.Load("Textures/Tower/Player2",typeof(Sprite)) as Sprite;
-			player1SelectdSprite = Resources.Load("Textures/Tower/Player1Selected",typeof(Sprite)) as Sprite;
-			player2SelectdSprite = Resources.Load("Textures/Tower/Player2Selected",typeof(Sprite)) as Sprite;
+            myPlusTen = transform.FindChild("TenPlusPlus");
+			if (this.name == "tower(Clone)") {
+								
+				neutralSprite = Resources.Load ("Textures/Tower/GeneratorNeutral", typeof(Sprite)) as Sprite;
+				player1Sprite = Resources.Load ("Textures/Tower/GeneratorYellow", typeof(Sprite)) as Sprite;
+				player2Sprite = Resources.Load ("Textures/Tower/GeneratorBlue", typeof(Sprite)) as Sprite;
+				player1SelectdSprite = Resources.Load ("Textures/Tower/GeneratorYellowSelected", typeof(Sprite)) as Sprite;
+				player2SelectdSprite = Resources.Load ("Textures/Tower/GeneratorBlueSelected", typeof(Sprite)) as Sprite;
+
+			} else if (this.name == "ShockTower(Clone)") {
+
+				neutralSprite = Resources.Load ("Textures/Tower/ShockTowerNeutral", typeof(Sprite)) as Sprite;
+				player1Sprite = Resources.Load ("Textures/Tower/ShockTowerYellow", typeof(Sprite)) as Sprite;
+				player2Sprite = Resources.Load ("Textures/Tower/ShockTowerBlue", typeof(Sprite)) as Sprite;
+				player1SelectdSprite = Resources.Load ("Textures/Tower/ShockTowerYellowSelected", typeof(Sprite)) as Sprite;
+				player2SelectdSprite = Resources.Load ("Textures/Tower/ShockTowerBlueSelected", typeof(Sprite)) as Sprite;
+			}
+
+			
+								
 		}
+
+
+	
+
 //-----------------------------------------------------------------------------------------------------------------------------------------
 
         void FixedUpdate()
@@ -70,13 +97,13 @@ namespace Global{
             if (Network.isClient)
                 return;
 
-			//updateSprite();
-
             //Increment garrisoned units on a constant interval
             if ((Time.realtimeSinceStartup - lastUnitGeneratedTime) > unitIncrementRate)
             {   
-                if(myOwner != ownerShip.Neutral)
-                    units++;
+                if(myOwner != ownerShip.Neutral){
+                    if(units < MAXUNITS)
+						units++;
+				}
                 lastUnitGeneratedTime = Time.realtimeSinceStartup;
             }            
         }
@@ -93,20 +120,15 @@ namespace Global{
             }
             else if (Network.isClient && myOwner == ownerShip.Player2)
             {
-                networkView.RPC("ToggleSelect", RPCMode.Server);
-                ToggleSelect();
-                updateSprite();
-                
+                networkView.RPC("ToggleSelect", RPCMode.Server);                
             }
             
         }
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
         [RPC]
-        public void ToggleSelect()        {
-            //Debug.Log("toggle by server? " + Network.isServer);
-            selected = (selected == true) ? false : true;
-            //updateSprite();
+        public void ToggleSelect(){
+            selected = (selected == true) ? false : true;           
         }
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -121,13 +143,13 @@ namespace Global{
                     myRender.sprite = neutralSprite;
                     break;
                 case ownerShip.Player1:
-                    if (selected)
+                    if (selected && Network.isServer)
                         myRender.sprite = player1SelectdSprite;
                     else
                         myRender.sprite = player1Sprite;
                     break;
                 case ownerShip.Player2:
-                    if (selected)
+                    if (selected && Network.isClient)
                         myRender.sprite = player2SelectdSprite;
                     else
                         myRender.sprite = player2Sprite;
@@ -170,8 +192,6 @@ namespace Global{
         {
             //Debug.Log("spawn Attack, selected: " + selected);
 
-            if (!selected)  //Ignore attack event if not selected
-                yield break;
 
             //Select the proper unit prefab to spawn
             GameObject prefabToSpawn = (myOwner == ownerShip.Player1) ? Player1UnitPrefab : Player2UnitPrefab;
@@ -181,12 +201,15 @@ namespace Global{
             Vector3 spawnPoint = vecToTarget;                                                     //a point on the line to target just outside the collider of the tower and unit
             spawnPoint.Normalize();
             spawnPoint *= (transform.localScale.x + prefabToSpawn.transform.localScale.x);        //could be more efficient math here but this is what I came up with to scale         
-            spawnPoint = new Vector3(spawnPoint.x + transform.position.x, spawnPoint.y + transform.position.y, 0);   //then translate
+			spawnPoint *= .5f;
+			spawnPoint = new Vector3(spawnPoint.x + transform.position.x, spawnPoint.y + transform.position.y, 0);   //then translate
+
 
 
             int unitsToSend = (int)(units * percentOfUnitsPerAttack);                            //Calculate the number of units to spawn
             
-            ownerShip myOwnerWhenStarted = myOwner;                                              //Ownership could change while SpawnAttack is sleeping
+            ownerShip myOwnerWhenStarted = myOwner;                                              //Ownership could change while SpawnAttack is sleeping           
+           
             
             //Keep sending till all units are sent or the tower runs out of units or switches sides
             while (unitsToSend > 0 && units > unitsToSend && myOwner == myOwnerWhenStarted)
@@ -210,6 +233,7 @@ namespace Global{
         [RPC]
         void SpawnAttackForMe(Vector3 pos)
         {
+            //Hard coding player2 as they are always the client
             Manager.AttackToward(pos, ownerShip.Player2);
         }
 //------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -218,21 +242,24 @@ namespace Global{
 		
         void OnTriggerEnter2D(Collider2D other) 
         {
+            //This function should only be running on the client as it changes game state
+            if (Network.isClient)
+                return;
+
 			Vector3 target = other.gameObject.GetComponent<unitBehavior>().destination;
 			Vector3 here = this.transform.position;
 			Vector3 distance = target - here;
-			print (distance.magnitude);
+		//	print (distance.magnitude);
 			if(distance.magnitude > 2){
 				return;
 			}
-            //todo Why isn't this being called on the server?
+
             ownerShip otherOwner = other.gameObject.GetComponent<unitBehavior>().myOwner;
             if (myOwner == otherOwner)                
                 units++;
             else
             {
-                //units = units - 2;
-                units -= 2;
+				units -= attackedDamage;
 				if (units < 0)                   //Can happen when multiple units hit at same time; might watnt to use math.clamp
                     units = 0;
                 if (units == 0)                  //Switch control when all units are lost
@@ -247,8 +274,10 @@ namespace Global{
         }
 //----------------------------------------------------------------------------------------------------------------------------------------------
 
+
         public void SwitchOwner(ownerShip switchTo)
         {
+            //Selection can't carry over when tower switches owner
             selected = false;
 
             myOwner = switchTo;
@@ -283,7 +312,7 @@ namespace Global{
             {
                 
                 stream.Serialize(ref units);
-                ownedBy = (int)myOwner;              //Cant passe our enum must pass Unity objects or primitives
+                ownedBy = (int)myOwner;              //Cant pass our enum must pass Unity objects or primitives
                 stream.Serialize(ref ownedBy);
                 stream.Serialize(ref selected);
 
@@ -294,16 +323,40 @@ namespace Global{
                 stream.Serialize(ref units);
                                 
                 stream.Serialize(ref ownedBy);
-                if (myOwner != (ownerShip)ownedBy)
-                SwitchOwner((ownerShip)ownedBy);
+                myOwner = (ownerShip)ownedBy;
+                stream.Serialize(ref selected);
+                updateSprite();
 
-                //bool tempSelected = false;
-                //stream.Serialize(ref tempSelected);
-                //if(selected != tempSelected);
-                //ToggleSelect();
             }
         }
 //--------------------------------------------------------------------------------------------------------------------------------------
+        #region EnergyGenAnimation
+
+        /// <summary>
+        /// Called from the server's gamemanager to start the plus ten energy animation
+        /// </summary>
+        [RPC]
+        public void PlayPlusTen()
+        {
+            print("called plus ten");
+            myPlusTen.GetComponent<Animator>().enabled = true;
+            myPlusTen.GetComponent<SpriteRenderer>().enabled = true;
+            StartCoroutine(turnOffAnimation());
+
+
+        }
+        IEnumerator turnOffAnimation()
+        {
+
+            yield return new WaitForSeconds(2f);
+            myPlusTen.GetComponent<Animator>().enabled = false;
+            myPlusTen.GetComponent<SpriteRenderer>().enabled = false;
+
+        }
+
+        #endregion
+
+        //-------------------------------------------------------------------------------------------
 		
         //Display # of garrisoned units above the tower
 		void OnGUI()
@@ -313,15 +366,15 @@ namespace Global{
                 {
                     case (ownerShip.Neutral):
                         GUI.contentColor = Color.grey;
-						GUI.Label(new Rect(screenPos.x - 9, sceneCam.pixelHeight - screenPos.y - 46, 25, 50),  units.ToString(),GUIneutral);
+						GUI.Label(new Rect(screenPos.x - 9, sceneCam.pixelHeight - screenPos.y - 60, 25, 50),  units.ToString(),GUIneutral);
                         break;
                     case (ownerShip.Player1):
                        // GUI.contentColor = Color.yellow;
-						GUI.Label(new Rect(screenPos.x - 9, sceneCam.pixelHeight - screenPos.y - 46, 25, 50),  units.ToString(),GUIplayer1);
+						GUI.Label(new Rect(screenPos.x - 9, sceneCam.pixelHeight - screenPos.y - 60, 25, 50),  units.ToString(),GUIplayer1);
                         break;
                     case (ownerShip.Player2):
                       //  GUI.contentColor = Color.magenta;
-						GUI.Label(new Rect(screenPos.x - 9, sceneCam.pixelHeight - screenPos.y - 46, 25, 50),  units.ToString(),GUIplayer2);
+						GUI.Label(new Rect(screenPos.x - 9, sceneCam.pixelHeight - screenPos.y - 60, 25, 50),  units.ToString(),GUIplayer2);
                         break;
 
                 }

@@ -13,6 +13,7 @@ namespace Global{
 		Quit,
 		Exit,
 		EndGame,
+		Tutorial,
 		Pause
 		//possible stat screen at the end,
 	}
@@ -25,22 +26,10 @@ namespace Global{
 	public float duration = 100.0f;
 	private float deltaTime  = 0.0f;
 	private float startTime;  //2.0f
+	private bool started = true;
+	public bool tutorialStarted = true;
 	#endregion
-	//player 1
-	//player 2
-	// networking passed to networkManager?
-	// global score
-	// current game state
-	// switch game state function
 
-
-	//player class is a container class for all the objects manager needs to know about
-	// ID?
-	// their score
-	// number of towers they have
-	// number of minions?
-	 //private player player1;
-	// private player player2;
 	 private Camera MainCamera;
 	 public WorldGameState status;
 
@@ -89,6 +78,10 @@ namespace Global{
 			case WorldGameState.Pause:
 				PauseState();
 				break;
+
+			case WorldGameState.Tutorial:
+				TutorialState();
+				break;
 			
 				
 			}
@@ -124,17 +117,20 @@ namespace Global{
 //---------------------------------------------------------------------------
 
 	private void InGameState(){
-			MainCamera.transform.position = new Vector3 (200, 0, -10);
-			MainCamera.orthographicSize = 18;
-			//gui needs to know about the score of each player
-			//also about they number of minions in each tower
-		
+			if (started) {
+				MainCamera.transform.position = new Vector3 (200, 0, -10);
+				MainCamera.orthographicSize = 18;
+				started = false;
+
+			}
+			ScrollCamera();
+	
 	}
 
 //---------------------------------------------------------------------------
 	
 	private void EndGameState(){
-		
+			MainCamera.transform.position = new Vector3 (200, 0, -10);
 		
 		
 	}
@@ -151,7 +147,7 @@ namespace Global{
 	
 	private void ExitState(){
 		
-		
+			Application.Quit();
 		
 	}
 
@@ -161,6 +157,32 @@ namespace Global{
 		//stop all logic, maybe turn the rest of the screen grey
 		
 		
+	}
+
+	private void TutorialState(){
+			if (tutorialStarted) {
+				MainCamera.transform.position = new Vector3 (0, -100, -10);
+				tutorialStarted = false;
+			}
+		
+		
+	}
+	public void CameraPosTutorial(int pos){
+			//if(MainCamera.transform.position.x 
+			float currentPos = MainCamera.transform.position.x;
+			print ("current pos  = " + currentPos);
+			currentPos += pos;
+			MainCamera.transform.position = new Vector3 (currentPos, -100, -10);
+	}
+	
+	public float scrollSpeed;
+	public float scrollDistance;
+
+	private void ScrollCamera(){
+			float wheelInput = MainCamera.transform.position.y;
+			 wheelInput+= Input.GetAxis("Mouse ScrollWheel") * scrollSpeed;
+			float newWhellPos = Mathf.Clamp(wheelInput, -scrollDistance, scrollDistance);
+			MainCamera.transform.position = new Vector3 (200, newWhellPos, -10);
 	}
 
 

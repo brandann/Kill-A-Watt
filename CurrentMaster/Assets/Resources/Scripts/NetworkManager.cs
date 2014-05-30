@@ -1,24 +1,30 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 
 
 namespace Global{
     public class NetworkManager : MonoBehaviour
     {
-        private const string typeName = "sometypeofGame";
+        
+        public bool debugWithoutClient = false; //When true game will start as soon as server starts otherwise wait for client
+
+        private const string typeName = "KillAWatt";
         public string gameName = "Enter a Server Name";
         public HostData[] hostList;
+        
 
-        GameManager gameManager;
+        private GameManager gameManager;
 
-        public StateManager stateManager;
+        private StateManager stateManager;
 
         public void StartServer()
         {
-            Network.InitializeServer(4, 25000, !Network.HavePublicAddress());
-            MasterServer.RegisterHost(typeName, gameName);
+            Network.InitializeServer(4, 5000, !Network.HavePublicAddress());
+            MasterServer.RegisterHost(typeName, gameName, "Open");
         }
+
         /// <summary>
         /// On initialization
         /// </summary>
@@ -27,22 +33,41 @@ namespace Global{
             stateManager = gameObject.GetComponent<StateManager>();
             gameManager = gameObject.GetComponent<GameManager>();
             
-            Network.minimumAllocatableViewIDs = 250;
+            Network.minimumAllocatableViewIDs = 300;
         }
 
         void OnServerInitialized()
         {
-           
-            gameManager.SpawnTowers();
+                      
+            if (debugWithoutClient)
+            {
+                stateManager.status = WorldGameState.InGame;
+                gameManager.SpawnTowers();
+            }
         }
 
-        void OnGUI()
-        {           //todo figure out when refreshhost list should be called
-            if (!Network.isClient && !Network.isServer)
+
+        void OnPlayerConnected()
+        {
+            if (!debugWithoutClient)
+            {
+                stateManager.status = WorldGameState.InGame;
+                gameManager.SpawnTowers();
+
+            }
+            //MasterServer.UnregisterHost();        Some glitch in Master server seems like it doesn't work
+            MasterServer.RegisterHost(typeName, gameName, "Closed");
+        }
+
+
+        void Update()
+        {   //Don't need to update hostlist if already connected
+            if (Network.isServer || Network.isClient)
+                return;
+
+            if (stateManager.status == WorldGameState.StartMenu)
                 RefreshHostList();
         }
-
-
 
         private void RefreshHostList()
         {
@@ -51,11 +76,20 @@ namespace Global{
 
         void OnMasterServerEvent(MasterServerEvent msEvent)
         {
+            List<HostData> hostBuffer = new List<HostData>();
+            List<HostData> openHosts = new List<HostData>();
             if (msEvent == MasterServerEvent.HostListReceived)
-                hostList = MasterServer.PollHostList();
+                 hostBuffer = new List<HostData>(MasterServer.PollHostList());
+
+            foreach (HostData hd in hostBuffer)
+            {
+                if (hd.comment == "Open")
+                    openHosts.Add(hd);
+            }
+
+            hostList = openHosts.ToArray();
+
         }
-
-
 
         public void JoinServer(HostData hostData)
         {
@@ -64,15 +98,36 @@ namespace Global{
 
         void OnConnectedToServer()
         {
-            //todo should move this to onPlayerConnected
-            stateManager.status = WorldGameState.InGame;
+            stateManager.status = WorldGameState.InGame;           
         }
 
-        void OnPlayerConnected()
-        {
-            stateManager.status = WorldGameState.InGame;
-            //todo add a pause before game actually starts
+        void OnDisconnectedFromServer(NetworkDisconnection msg) {
+		if (Network.isServer) {
+			Debug.Log("Local server connection disconnected");
+		}
+		else {
+			if (msg == NetworkDisconnection.LostConnection)
+				Debug.Log("Lost connection to the server");
+			else
+				Debug.Log("Successfully diconnected from the server");
+		}
+
+        switch (stateManager.status) { 
+            case WorldGameState.InGame:
+                stateManager.status = WorldGameState.EndGame;
+                break;
+            case WorldGameState.EndGame:
+                break;
+            default:
+                Debug.Log("Disconnected from invalid state");
+                break;
         }
+
+        MasterServer.UnregisterHost();
+        //Network.Disconnect();
+
+       
+	}
 
     }
 }

@@ -8,24 +8,38 @@ public class Connection : MonoBehaviour {
 
 	public GameObject connectionPrefab; //set by inspector
 	public Dictionary<GameObject,LineRenderer> connections = new Dictionary<GameObject,LineRenderer>();
-	public double connectionDistance; // change in inspector
+	private double connectionDistance = 12; // change in inspector
 	private ownerShip parentsOwner;
-	public bool Visited;
+	
 
 
 	void Start () {
-		parentsOwner = this.transform.parent.gameObject.GetComponent<Tower>().myOwner;
+			if(this.transform.parent.gameObject.name == "tower(Clone)")
+				parentsOwner = this.transform.parent.gameObject.GetComponent<Tower>().myOwner;
+			else if(this.transform.parent.gameObject.name == "ShockTower(Clone)")
+				parentsOwner = this.transform.parent.gameObject.GetComponent<Tower>().myOwner;
+			else
+				parentsOwner = this.transform.parent.gameObject.GetComponent<DeathRay>().myOwner;
+
 		findAdjacentTowers ();
 		buildConnections ();
-		Visited = false;
+		updateConnectionColors ();
+	
 		
 	}
 
 
 	void Update () {
-			parentsOwner = this.transform.parent.gameObject.GetComponent<Tower>().myOwner;
-			updateConnectionColors ();
+			if(this.transform.parent.gameObject.name == "tower(Clone)")
+				parentsOwner = this.transform.parent.gameObject.GetComponent<Tower>().myOwner;
+			else if(this.transform.parent.gameObject.name == "ShockTower(Clone)")
+				parentsOwner = this.transform.parent.gameObject.GetComponent<Tower>().myOwner;
+			else
+				parentsOwner = this.transform.parent.gameObject.GetComponent<DeathRay>().myOwner;
+
+
 			buildConnections ();
+			updateConnectionColors ();
 	}
 
 
@@ -77,27 +91,28 @@ public class Connection : MonoBehaviour {
 		foreach (var tower in connections) {
 
 			if(parentsOwner == tower.Key.GetComponent<Tower>().myOwner && parentsOwner == ownerShip.Player1){
-					//print ("red");
-					tower.Value.SetColors(Color.yellow,Color.yellow);
+					Color32 DarkYellow = new Color32(152,142,24,200);
+					tower.Value.SetColors(DarkYellow,DarkYellow);
 			}
 					//make red
 
 			if(parentsOwner == tower.Key.GetComponent<Tower>().myOwner && parentsOwner == ownerShip.Player2){
-					//print ("blue");
-					tower.Value.SetColors(Color.magenta,Color.magenta);
+					Color32 DarkBlue = new Color32(22,74,144,200);
+					tower.Value.SetColors(DarkBlue,DarkBlue);
 			}
 						//make blue
 
 				if(ownerShip.Neutral == tower.Key.GetComponent<Tower>().myOwner || parentsOwner != tower.Key.GetComponent<Tower>().myOwner){
-					//print ("grey");
-					tower.Value.SetColors(Color.grey,Color.grey);
+
+					Color32 DarkGrey = new Color32(139,139,139,66);
+					tower.Value.SetColors(DarkGrey,DarkGrey);
 			}
 							//make line grey
 		}
 		
 	}
 
-	
+
 }
 
 

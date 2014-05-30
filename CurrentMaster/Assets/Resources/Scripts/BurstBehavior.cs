@@ -26,8 +26,8 @@ public class BurstBehavior : MonoBehaviour {
 		myRender = (SpriteRenderer)renderer;
 
 		// load and set sprites
-		purpleSprite = Resources.Load("Textures/Burst/BurstPurple",typeof(Sprite)) as Sprite;
-		yellowSprite = Resources.Load("Textures/Burst/BurstYellow",typeof(Sprite)) as Sprite;
+		purpleSprite = Resources.Load("Textures/MinionYellow",typeof(Sprite)) as Sprite;
+		yellowSprite = Resources.Load("Textures/MinionBlue",typeof(Sprite)) as Sprite;
 		int randomInt = Random.Range (0, 2);
 		myRender.sprite = (randomInt == 0) ? purpleSprite : yellowSprite;
 	}
